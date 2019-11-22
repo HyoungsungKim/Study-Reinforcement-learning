@@ -344,5 +344,3 @@ UCB often performs well, as shown here, but is more difficult than $$\epsilon$$ 
 - ***Another difficulty is dealing with large state spaces.*** In these more advanced settings the idea of UCB action selection is usually not practical.
 - UCB generally performs better than $$\epsilon$$ - greedy action selection, except in the first `k` steps, when it selects randomly among the as-yet-untried actions.
 
-## 2.10 Summary
-
