@@ -9,7 +9,7 @@ Week 1
   - Each example is a description of a situation together with a specification***—the label—***of the correct action the system should take to that situation, which is often to identify a category to which the situation belongs.
   - The object of this kind of learning is for the system to extrapolate(추론하다), or generalize, its responses so that it acts correctly in situations not present in the training set.
   - This is an important kind of learning, ***but alone it is not adequate for learning from interaction.*** In interactive problems it is often impractical to obtain examples of desired behavior that are both correct and representative of all the situations in which the agent has to act. In uncharted(지도에 표시되어 있지 않은) territory—where one would expect learning to be most beneficial—***an agent must be able to learn from its own experience.***
-- 지도학습은 라벨링 된 데이터에 적절하게 동작하지 않음
+- 지도학습은 라벨링 안된 데이터에 적절하게 동작하지 않음
   - 에이전트는 경험으로부터 학습 할 수 있어야 함
 
 ***Reinforcement learning is also different from what machine learning researchers call unsupervised learning,*** which is typically about finding structure hidden in collections of unlabeled data.
