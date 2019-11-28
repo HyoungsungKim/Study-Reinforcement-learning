@@ -44,6 +44,9 @@ Recall that the value of a state is the expected return—expected cumulative fu
 Suppose we wish to estimate $$v_\pi (s)$$, the value of a state `s` under policy $$\pi$$, given a set of episodes obtained by following $$\pi$$ and passing through s. Each occurrence of state s in an episode is called a ***visit to `s`***. Of course, `s` may be visited multiple times in the same episode;
 
 - Let us call the first time it is visited in an episode the first visit to `s`.
+- 같은 에피소드에서 한 스테이트를 여러번 방문 할 수도 있음
+- 여기서 처음 방문 했을 때 값을 평균으로 사용 함(처음 방문 했을 때에만 누적 합에 포함시킴) -> First-visit MC method
+- [Psudo code](https://ai.stackexchange.com/questions/10812/what-is-the-difference-between-first-visit-monte-carlo-and-every-visit-monte-car)
 - ***The first-visit MC method*** estimates $$v_\pi(s)$$ as the average of the returns following first visits to `s`,
 - Whereas ***the every-visit MC*** method averages the returns following all visits to s.
   - These two Monte Carlo (MC) methods are very similar but have slightly different theoretical properties.
@@ -119,3 +122,70 @@ For now we focus on the assumption that policy evaluation operates on an infinit
       - 측정과 가정은 에러의 확률과 값을 범위 안에 들어오도록 하고, 충분한 스텝이 policy evaluation동안 이루어지면 이 범위는 충분히 작아진다
       - This approach can probably be made completely satisfactory in the sense of guaranteeing correct convergence up to some level of approximation. However, it is also likely to require far too many episodes to be useful in practice on any but the smallest problems.
       - 하지만 이 방법 역시 많은 횟수의 반복이 필요 함
+    - There is a second approach to avoiding the infinite number of episodes nominally required for policy evaluation, in which ***we give up trying to complete policy evaluation before returning to policy improvement.***
+      - On each evaluation step we move the value function toward $$q_{\pi_k}$$, but we do not expect to actually get close except over many steps.
+      - One extreme form of the idea is value iteration, in which only one iteration of iterative policy evaluation is performed between each step of policy improvement. The in-place version of value iteration is even more extreme
+
+## 5.4 Monte Carlo Control without Exploring Starts
+
+How can we avoid the unlikely assumption of exploring starts? There are two approaches to ensuring this, resulting in what we call ***on-policy methods and off-policy methods***.
+
+- On-policy methods attempt to evaluate or improve the policy that is used to make decisions
+  - On-policy는 결정을 내리는데 사용했던 정책을 평가하거나 발전 시키는 것을 시도 함
+  - The Monte Carlo ES(Exploring Starts - Maintain exploration) method developed above is an example of an on-policy method.
+- Whereas off-policy methods evaluate or improve a policy different from that used to generate the data.
+  - Off-policy는 data를 생성하는데 사용 했던 정책 차이를 평가하거나 발전 시킴
+  - Off-policy methods are considered in the next section.
+
+In ***on-policy*** control methods the policy is generally ***soft***, meaning that $$\pi(a|s) > 0$$ for all $$s \in S$$ and all $$a \in A(s)$$, but gradually ***shifted closer and closer to a deterministic optimal policy.***
+
+- Deterministic : 같은 input이 들어가면 같은 output이 나옴
+- $$\epsilon$$-greedy : 같은 input이 들어가도 확률적으로 다른 output이 나올 수도 있음
+- $$\epsilon$$-soft : Deterministic optimal policy로 조금씩 이동하는  $$\epsilon$$-greedy
+
+- The on-policy method we present in this section uses $$\epsilon$$-greedy policies, meaning that ***most of the time they choose an action that has maximal estimated action value, but with probability $$\epsilon$$ they instead select an action at random.***
+- Greedy한 선택을 하다가 낮은 확률로($$\epsilon$$) 다른 행동 선택
+- That is, all non-greedy actions are given the minimal probability of selection, $$\frac{\epsilon}{|A(s)|}$$ , and the remaining bulk of the probability, $$1 - \epsilon + \frac{\epsilon}{|A(s)|}$$, is given to the greedy action.
+- $$\frac{\epsilon}{|A(s)|}$$  : Joint probability -> one of actions and it is non-greedy?(Joint probability)
+- $$1 - \epsilon \{ {1 - \frac{1}{|A(s)|}} \}$$ :  
+  - $$\epsilon \{ {1 - \frac{1}{|A(s)|}} \}$$ : action 중에 하나를 선택했는데 그걸 제외한 모든 action이 non-greedy 할 확률
+  - 1에서 action 중에 하나를 선택 했는데 그걸 제외한 모든 action이 non-greedy한 확률을 빼면 하나의 액션이 greedy한 선택일 확률 이 됨(맞나...?)
+- ***The $$\epsilon$$-greedy policies are examples of $$\epsilon$$-soft policies,*** defined as policies for which $$\pi(a|s) \ge \frac{\epsilon}{|A(s)|}$$ for all states and actions, for some $$\epsilon > 0$$. Among $$\epsilon$$-soft policies, $$\epsilon$$-greedy policies are in some sense those that are closest to greedy.
+- ***Epsilon soft policies Force the agent to continually explore*** that means we can drop the exploring starts requirement from the Monte Carlo control algorithm an Epsilon soft policy assigns nonzero probability to each action in every state ***because of this Epsilon soft agents continue to visit all state action pairs indefinitely.***
+
+Fortunately, GPI does not require that the policy be taken all the way to a greedy policy, only that it be moved toward a greedy policy.
+
+## 5.5 Off-policy Prediction via Importance Sampling
+
+- On-policy : Improve and evaluate the policy being used to select actions
+  - 액션 선택에 사용되는 정책을 향상시키거나 평가 하는 것
+- Off-policy : Improve and evaluate a different policy from the one used to select actions
+  - 선택 된 정책과 다른 정책을 향상 시키고 평가 하는 것
+
+For example, you could learn the optimal policy while following a totally random policy ***we call the policy that the agent is learning the target policy*** because it is the target of the agents learning.
+
+- ***The value function that the agent is learning is based on the target policy.***
+  - Target policy : $$\pi(a|s)$$
+  - 에이전트는 타겟 폴리시를 기반으로 학습 함
+  - one example of a Target policy is the optimal policy.
+- ***We call the policy that the agent is using to select actions the behavior policy*** because it defines our agents Behavior.
+  - Behavior policy : $$b(a|s)$$
+  - The behavior policy is in ***charge of selecting actions*** for the agent.
+  - 액션을 선택하는데 들어가는 비용
+  - The behavior policies shown here is the uniform random policy. 
+- Coupling targeting and behavior
+  - Because it provides another strategy for continual exploration
+  - If our agent behaves according to the Target policy it might only experience a small number of states. 
+  - 만약 타겟 폴리시만 따라간다면 충분한 숫자의 state가 학습이 안된 것
+  - If our agent can behave according to a policy that favors exploration, It can experience a much larger number of states. 
+  - 만약 우리의 에이전트가 탐험한 정책에 따를 수 있다면  더 많은 숫자의 정책을 경험 할 수 있음
+
+One key rule of off-policy learning is that the ***behavior policy must cover the target policy.***
+
+- In other words, if the target policy says the probability of selecting an action a given State `s` is greater than zero, ***then the behavior policy must say the probability of selecting that action in that state is greater than 0***. There is a key mathematical reason for this that we will discuss in an upcoming video. 
+  - $$\pi(a|s) > 0 \text{ where } b(a|s) > 0$$
+- ***On-policies the specific case where the target policy is equal to the behavior policy.***
+- Off-policy learning is another way to obtain continual exploration.
+- Off-policy learning allows learning an optimal policy from suboptimal behavior
+- ***The policy that we are learning is the target policy***
+- ***The policy that we are choosing actions from is the behavior policy***

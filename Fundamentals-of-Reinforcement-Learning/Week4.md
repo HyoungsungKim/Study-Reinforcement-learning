@@ -48,6 +48,7 @@ for all $$s \in S, a \in A(s), \text{ and } s' \in S^+$$. As we shall see, DP al
 First we consider how to compute the state-value function $$v_\pi$$ for an arbitrary policy $$\pi$$. This is called ***policy evaluation in the DP literature***.
 
 - We also refer to it as the ***prediction problem***. For all $$s \in S$$,
+- 이 식은 policy를 순회(iterator) 함
 
 $$
 \begin{alignat}{2}
@@ -91,13 +92,14 @@ To produce each successive approximation, $$v_{k+1}$$ from $$v_k$$ , iterative p
     - Because they are based on an expectation over all possible next states rather than on a sample next state.
     - The nature of an update can be expressed in an equation, as above, or in a backup diagram like those introduced in Chapter 3.
 
-To write a sequential computer program to implement iterative policy evaluation as given by (4.5) ***you would have to use two arrays, one for the old values, $$v_k(s)$$, and one for the new values, $$v_{k+1}$$ (s).**
+To write a sequential computer program to implement iterative policy evaluation as given by (4.5) ***you would have to use two arrays, one for the old values, $$v_k(s)$$, and one for the new values, $$v_{k+1}$$ (s).***
 
 - 배열을 두개 쓸 경우 하나의 배열을 다 채운뒤에 그 배열을 이용하지만, 한개의 배열을 사용 할 때에는 배열에 채워진 update value를 바로 사용 함 -> 더 빠르게 수렴
 -  With two arrays, the new values can be computed one by one from the old values without the old values being changed.
 - Of course it is easier to use one array and update the values “in place,” that is, with each new value immediately overwriting the old one. Then, depending on the order in which the states are updated, sometimes new values are used instead of old ones on the right-hand side of (4.5).
   - This in-place algorithm also converges to $$v_{\pi}$$; in fact, ***it usually converges faster than the two-array version,*** as you might expect, because it uses new data as soon as they are available.
   - For the in-place algorithm, ***the order in which states have their values updated during the sweep has a significant influence on the rate of convergence.*** We usually have the in-place version in mind when we think of DP algorithms.
+  - Sweep : Updates as being done
 
 Formally, iterative policy evaluation converges only in the limit, but in practice it must be halted short of this. The pseudo code tests the quantity $$\underset{s \in S}{max}  |v_{k+1} (s) - v_{k}(s)|$$ after each sweep and stops when it is sufficiently small.
 
