@@ -86,8 +86,6 @@ Suppose there is available only a finite amount of experience, say 10 episodes o
 - Understanding these two answers will help us understand the difference between the two methods. ***Under normal updating the methods do not move all the way to their respective batch answers, but in some sense they take steps in these directions.***
 - TD(0)와 MC의 값은 다르지만 같은 방향으로 전개 됨
 
-
-
 ### Example 6.4
 
 illustrates a general difference between the estimates found by batch $$TD(0)$$ and batch Monte Carlo methods.
