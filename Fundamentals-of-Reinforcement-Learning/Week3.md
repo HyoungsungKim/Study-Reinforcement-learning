@@ -73,7 +73,7 @@ For example, if an agent follows policy $$\pi$$ and maintains an average, for ea
 $$
 v_\pi(s) \doteq \mathbb{E}_\pi[G_t|S_t=s] \\
 = \sum_{a \in A}\pi(a|s)*q_\pi(s,a)\\
-= \sum_a \pi(a|s)\sum_{s',r}p(s',a|s,a)[r+\gamma v_\pi(s')]  \text{ for all } s \in \bold{S}
+= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)[r+\gamma v_\pi(s')]  \text{ for all } s \in \bold{S}
 $$
 
 

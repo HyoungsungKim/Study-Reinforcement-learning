@@ -111,6 +111,7 @@ This update is done after every transition from a nonterminal state $$S_t$$.
   $$
   
   - Q-learning은 action-value function과 target-policy의 곱으로 주어진 policy에서 어떤 state의 값이든 계산 할 수 있음
+  - Q-learning은 expected Sarsa의 special case
 
 ***One of the early breakthroughs in reinforcement learning*** was the development of an off-policy TD control algorithm known as Q-learning (Watkins, 1989), defined by
 $$
@@ -125,7 +126,18 @@ In this case, the learned action-value function, Q, directly approximates $$q_*$
 
 ## 6.6 Expected Sarsa
 
+- Sarsa
+
+$$
+Q(S_t, A_t) \gets Q(S_t, A_t) + \alpha[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)]
+$$
+
+
+
 Consider the learning algorithm that is just like Q-learning except that instead of the maximum over next state–action pairs it uses the expected value, taking into account how likely each action is under the current policy. That is, consider the algorithm with the update rule
+
+- Expected Sarsa
+
 $$
 \begin{alignat}{2}
 Q(S_t, A_t) & \gets Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \mathbb{E}_\pi[Q(S_{t+1}, A_{t+1} | S_{t+1})] - Q(S_t, A_t)] \\
@@ -134,6 +146,11 @@ Q(S_t, A_t) & \gets Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \mathbb{E}_\pi[Q(S_{t
 \end{alignat}
 $$
 
+- That means that on every time step, the agent has to average the next state's action values according to how likely they are under the policy
+- Expected Sarsa has more stable update target than Sarsa
+  - Expected Sarsa update targets are exactly correct
+  - And do not change their estimated values away from the true values
+- In general, expected Sarsa update targets are much lower variance than Sarsa(But more expensive sampling)
 - $$\pi(a|S_{t+1})$$ : 확률
 - $$Q(S_{t+1}, a)$$ : 랜덤 변수
 - This algorithm moves ***deterministically*** in the same direction as Sarsa moves in expectation, and accordingly it is called ***Expected Sarsa***.
@@ -143,4 +160,5 @@ In these cliff walking results Expected Sarsa was used on-policy, ***but in gene
 
 - For example, ***suppose $$\pi$$ is the greedy policy while behavior is more exploratory***; then Expected Sarsa is exactly Q-learning.
   - In this sense Expected Sarsa subsumes and generalizes Q-learning while reliably improving over Sarsa. Except for the small additional computational cost, Expected Sarsa may completely dominate both of the other more-well-known TD control algorithms.
+- Sarsa and Q-Learning both use the expectation over their target policies in their update targets. This allows them to learn off-policy without importance sampling
 
