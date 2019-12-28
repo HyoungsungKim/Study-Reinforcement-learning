@@ -90,6 +90,7 @@ s \mapsto R(s, \pi(s)) + \gamma \hat{v}_\pi(S_{t+1}, w) \\
 s,a \mapsto R(s,a) + \gamma \hat{v}_\pi(S_{t+1}, w)
 $$
 
+- ***Goal is function of `w`***
 - Temporal difference targets otherwise to learn as it plays a game, we don't need to wait until the very end of the episode to update our model. 
 - They also have a very small variance
 
@@ -125,3 +126,118 @@ $$
 >
 > - Online - update policy during the episode(e.g. TD)
 > - Offline - update policy after an episode ends(e.g. MC)
+
+## Loss functions in value based RL
+
+ One of the most simple and most widespread method of minimizing the loss is by a means of gradient descent.
+$$
+\mathcal{L}(w) = \frac{1}{2} \cdot \sum_{s,a} \rho_\pi(s,a)[g(s,a) - \hat{q}_\pi(s,a,w)]^2 \\
+\mathcal{L}_{s,a}(w) = [g(s,a) - \hat{q}_\pi(s,a,w)]^2
+$$
+Gradient descent(GD)
+$$
+w \leftarrow w - \alpha \nabla_w \mathcal{L}(w)
+$$
+
+- To update parameters `w` with gradients descent, we should differentiate the whole loss.
+  - We actually cannot even compute the loss.
+  - We only have only is sample-based estimate.
+
+Stochastic gradient descent(SGD)
+
+- On-policy : $$s, a \sim \rho_\pi$$
+- Off-policy : $$s, a \sim \rho_b$$
+
+$$
+w \leftarrow w - \alpha\nabla_w \mathcal{L}_{s,a}(w)
+$$
+
+- We should differentiate them with respect to parameters w.
+- We will not only make sure estimate of current state and action.
+- Thus, we introduce a so-called semi grading methods which ***treat goal as fixed and this for any particular type of goal*** - semi gradient descent
+
+$$
+\nabla_w g(s,a) = 0
+$$
+
+- This assumption simplifies math a lot
+
+$$
+w \leftarrow w - \alpha \nabla_w \mathcal{L}_{s,a}(w) \\
+w \leftarrow w + \alpha[g(s,a) - \hat{q}(s,a,w)]\nabla_w\hat{q}_\pi(s,a,w)
+$$
+
+- $$\mathcal{L}$$ 에서 $$\mathcal{L}_{s,a}$$로 바뀜
+- $$\rho_\pi$$를 고려 할 필요가 없어짐(미분 쉬워짐)
+
+### Semi-gradient update
+
+- Treats goals $$g(s,a)$$ as fixed numbers
+- Changes parameters to move estimates closer to targets
+- ***Ignores effect update on the target***
+- Is not a proper gradient
+  - No SGD's theoretical convergence properties
+  - Converges reliably tin most cases
+  - More computationally efficient than true SGD
+- Meaningful thing to do
+
+Targets g(s,a) define what and how do we learn
+
+- SARSA (On-policy TD control)
+
+$$
+g(s,a) = R(s,a) + \gamma \hat{q}_\pi(S_{t+1}, A_{t+1}, w)
+$$
+
+- Expected SARSA
+
+$$
+g(s,a) = R(s, a) + \gamma \sum_{a}\pi(a | S_{t+1})\hat{q}_\pi(S_{t+1}, a, w)
+$$
+
+- Q-learning (Off-policy TD control)
+
+$$
+g(s,a) = R(s,a) + \gamma \max_a \hat{q}_\pi(S_{t+1}, a, w)
+$$
+
+- In each case, $$g(s,a)$$ is random variable. because it depends on the next state $$S_{t+1}$$. and additionally, on $$a_{t+1}$$ in case of SARSA.
+- And on $$A_{t+1}$$ in case of SARSA. These doubles stochastic of SARSA target is not good thing.
+  - That is main reason for why using expected SARSA is preferable than SARSA
+
+### Semi-gradient SARSA(on-policy TD control)
+
+Tabular SARSA
+$$
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)]
+$$
+
+- SARSA algorithm is an example of application of Bellman expectation equation.
+
+Approximate SARSA
+$$
+w \leftarrow w + \alpha[R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, w) - \hat{q}(S_t, A_t, w)]\nabla\hat{q}(S_t, A_t, w)
+$$
+
+### Semi-gradient expected SARSA (off-policy)
+
+Tabular expected SARSA
+$$
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha[R_{t+1} + \gamma \mathbb{E}_\pi[Q(S_{t+1}, A_{t+1}) | S_{t+1}] - Q(S_t, A_t)] \\
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha[R_{t+1} + \gamma\sum_a \pi(a|S_{t+1})Q(S_{t+1}, a) - Q(S_t, A_t)]
+$$
+Approximate expected SARSA
+$$
+w \leftarrow w + \alpha[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})\hat{q}(S_{t+1}, a, w) - \hat{q}(S_t, A_t, w)]\nabla\hat{q}(S_t, A_t, w)
+$$
+
+### Semi-gradient Q-learning (off-policy)
+
+Tabular Q-learning
+$$
+Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha[R_{t+1} + \gamma \max_a Q(S_{t+1}, a) - Q(S_t, A_t)]
+$$
+Approximate Q-learning
+$$
+w \leftarrow w + \alpha[R_{t+1} + \gamma \max_a \hat{q}(S_{t+1}, a, w) - \hat{q}(S_t, A_t, w)]\nabla\hat{q}(S_t, A_t, w)
+$$
