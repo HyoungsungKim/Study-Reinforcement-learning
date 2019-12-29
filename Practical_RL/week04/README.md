@@ -241,3 +241,110 @@ Approximate Q-learning
 $$
 w \leftarrow w + \alpha[R_{t+1} + \gamma \max_a \hat{q}(S_{t+1}, a, w) - \hat{q}(S_t, A_t, w)]\nabla\hat{q}(S_t, A_t, w)
 $$
+
+## Difficulties with approximate methods
+
+Some problems that arise in reinforcement learning are well known in machine
+
+- These problems are not specific to reinforcement learning, but pose a significant difficulty in practice.
+
+### Round (0): general well-known boring problems
+
+- Curse of dimensionality (Too many state-action pair)
+  - The number of states and actions grows exponentially with the number of variables used to describe them.
+  - ***Methods should be sample efficient***
+  - 모든 상황을 고려하기에는 경우의 수가 너무 많기 때문에 가능한 것만 고려해야 함
+
+$$
+|\mathcal{A}| \cdot |\mathcal{S}| = 18 \cdot 256^{210 \cdot 16 \cdot 3} \approx 10^{100000} \gg 10^{83}
+$$
+
+- Meaningful decisions need accurate value estimate
+  - ***Methods should be very flexible***
+- Any model has finite # of params
+  - Even universal approximators are limited
+- Biased-variance tradeoff - overfitting/underfitting
+  - Cross validation on scarce data is unreliable
+
+### Problems with Supervised Learning(SL) in RL
+
+1. Unusual data
+   1. Correlation
+   2. Dependence on policy
+   3. Proximity(가까움) in space and time
+2. Non-stationarity
+   1. Policy improvement
+   2. Non-stationary task
+3. The deadly triad(3인조) (off-policy learning)
+
+***In practice, they often come all at once***
+
+- Because the problems are deeply interconnected, and rarely come apart from each other
+  - 왜냐하면 문제들은 깊게 서로 연관 되어 있고, 떨어지는 일이 매우 드물기 때문이다.
+- Why do we say that training data in the reinforcement learning is unusual? 
+
+### Round(1.1): data - correlated samples
+
+The first reason is that training data in reinforcement learning is by no means independent and intensively distributed. 
+
+- Sequences of highly correlated non-iid data
+  - 예를 들어서 게임에서 방어물 뒤에 숨어 있던 에이전트가 있을때, 방어물이 제거 된다면 방어물이 존재 할 때 학습했던 데이터는 무용지물이 됨.
+  - Forgetting useful facts and features
+  - Much of SL rely on iid assumption
+  - SGD loses convergence guarantees
+- Think of in what case there is more information? In case of two independent samples, or in case of two perfectly correlated samples? 
+  - 서로 독립인 두 샘플과, 서로 완전히 correlated된 두 샘플 중 어느 것이 더 정보량이 많을까?
+  - Obviously, ***the former is more useful for learning from.***
+    - 독립이기때문에 각 샘플에 정보량이 많음
+  - ***Another interesting fact is that SGD loses its convergence properties. In case of non-independent, and identical distributed data.***
+    - 샘플이 iid가 아니면 SGD는 수렴 특성을 잃음
+    - So, we are no more guaranteed to converge to the optimum.
+
+### Round(1.2): data - dependence on policy
+
+- The second reason why we say that the training data is unusual, is the fact of ***data dependence on the current policy.***
+  - 훈련데이터가 평범하지 않은 두번째 이유는 데이터는 현재의 정책에 의존하기 때문이다.
+  - In reinforcement learning, we not only observe the actions chosen by the policy, but we also observe states and rewards, that are influenced by the policy. 
+  - 강화학습에서 우리는 정책에 의해 관측된 action뿐만 아니라, state, rewards 역시 관측함.
+  - More to say, when we update the parameters of policy, we also change not only the distribution of factions, but we also change the states and rewards
+  - 더 말하자면, 정책을 업데이트 하면 정책과 연관된 다른 것들도 모두 업데이트 해야함.
+- Unseen data comes as agent learns new things
+- An agent can learn the fatal behavior
+  - new data could be insufficient to unlearn it
+- Agent experiments with data stream by exploration
+
+### Round(1.3): data - proximity(가까움) in space and time
+
+- $$Q(s,a)$$ often changes abruptly in `s` and `a`
+  - Close states could be arbitrary far in value
+  - Successive states could be arbitrary far in value
+  - Unstable gradients, much data needed for SGD
+  - Numerical problems
+
+### Round(2): inherent non-stationarity - GPI
+
+- Cannot assume fixed training data distribution
+  - TD targets are invalidated
+  - MC target no longer apply
+- Numeric problems(oscillating behaviour)
+  - Small change in Q-value can cause
+    - Drastic change in policy
+    - Drastic change in training data
+    - Large gradient
+    - Large update in Q-values
+- The environment can itself be non-stationary
+
+### Round(3): The deadly triad - model divergence
+
+1. Off-policy learning
+   - E.g. Learning target $$\pi$$ while following behaviour $$b$$
+2. Bootstrapping
+   - Updating a guess towards another guess(TD, DP)
+3. Function approximation
+   - Using model with # of params smaller than # of states
+
+- Divergence is not connected with
+  - Sampling, exploration, greediness, control
+  - Complexity of the model(even linear models diverge)
+
+***This divergence to infinity almost never happens in practice*** and there are also a bunch of practical tricks which we believe my stabilize things up. But note that community of reinforcement learning researchers still miss the deeper understanding of this divergence problem.
