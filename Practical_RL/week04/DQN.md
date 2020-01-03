@@ -399,3 +399,85 @@ Here is that you have to train a set of key, say 5 or 10 Q value predictors, ***
 - Train head & body
 - Repeat
 
+## Partial observability
+
+### Problem:
+
+In most real environment agent observation does not hold all information about system state(e.g. human field of view)
+
+- 대부분의 실제 환경 에이전트 관측은 시스템 상태에 대한 모든 정보를 가지고 있지 않음
+- The main issue for now is the fact that, in almost all case, your agent will have a direct access to the environment's state like it was supposed in the MDP. 
+
+Example:
+
+- Robotics : field of view
+- Trading bots : market state
+- Atari breakout : ball velocity
+
+To mitigate this issue, the first thing we have to do is we have to redefine the way our decision process works.(MDP)
+
+- We probably assume that in any practical case, we don't know the distribution explicitly, but we can estimate it from samples if we wish. 
+
+Usual MDP
+
+observe, Agent pick action -> action -> get a prob from env -> state -> observe, Agent pick action
+
+Partially observed MDP
+
+observe, Agent pick action -> action -> hidden state(Markov assumption holds - but no one cares) -> observation -> observe, Agent pick action
+
+- The observation function is basically some function which limits what agent can see, and what he cannot see. 
+- So, there is a hidden state in the environment, this S here in a circle, and technically it exists.
+- There even is next stage you include it in the next distribution.
+  - But you never see not just the probability distribution, but the entire state as it is as well.
+  - So, you don't get to see the state. you only see a sequence of observations, and you may somehow judge what happens inside the environment based on those observations, but it's the best thing you can count on.
+- So, to solve this new process called, Partially Observable Markov Decision Process because of this observation function, we need to introduce something else to an agent, which helps him operate in the situation. 
+
+### How do we train an agent in such process?
+
+What would help you to for example, ***not forget about the person that you are not seeing right now directly?***
+
+- If you've just looked away from a person, what would help you to still keep him in mind? Well yes. What we want to introduce is, ***there should be some kind of agents persistent memory.***
+  - The memory cell where he can store some information between iterations.
+  - There is some kind of this hidden variable h, which is yet another vector or any other set of numbers, and on every iteration, agent can update his memory, his new h given his observation and the previous memory.
+
+### N-gram heuristic
+
+Idea
+$$
+s_t \neq o(s_t)  \\
+s_t \approx(o(s_{t-n}), a_{t-n}, ..., o(s_{t-n}), a_{t-1}, o(s_t))
+$$
+e.g. ball movement in breakout
+
+- Basically for the Atari games, we just use the frame buffer heuristic. Basically, we said that we cannot get the state variables exactly, ***but we can get almost everything we need if we just stack say, last four observations or any other amount of observations because it's useful.***
+  - 아타리 게임에서 이전의 4개의 프레임을 저장해서 정보를 유지 할 수 있음.
+  - 하지만 한계가 있음(4개 저장하는게 최선임)
+  - Now technically, this gives us all the information we need for Atari, but it has a number of flaws.
+  - For instance, this week, we cannot remember anything which happens more than four turns before this particular step.
+  - If you want to monitor something more complex, then four turns is not going to be enough.
+
+### Can we do better?
+
+- There is a hidden process
+- You only see some part of it
+- You want hidden states
+
+Reminds you of something?
+
+***-> There's actually one architecture in deep learning which works with these exact assumptions***
+
+- Recurrent neural networks
+
+### DRQN
+
+Idea:
+
+- use LSTM on top of DQN body
+- predict Q-values from hidden state
+- train on partial trajectories
+- uses other existing DQN tricks
+
+Problem
+
+- If you sample those trajectories in a special way, then you no longer get independent and identically distributed data. 
