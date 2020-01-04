@@ -1,5 +1,7 @@
 # Week 04
 
+<img src="./atari-breakout.gif" alt="atari-breakout" style="zoom:200%;" />
+
 The most practical widely-known application of reinforcement learning techniques nowadays, is playing video games. This is in part because video games are perfect small-sized and oversimplified reflections of real life, but also in part because current methods are not efficient in nature for applications to real life problems.
 
 현재 강화 학습이 가장 널리 사용되고 있는 분야는 비디오 게임임. 비디오 게임은 현실 세계를 간단화 하여 담고 있다는 장점이 있지만, 실제 세상에 바로 적용 할 수없다는 단점이 존재함.
