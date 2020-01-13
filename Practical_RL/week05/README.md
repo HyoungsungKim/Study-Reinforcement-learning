@@ -73,7 +73,77 @@ How did you find the probabilistic policy in case of continuous(More then 1-dime
     - If you have all perfect Q values, then you can simply find the optimal ones, the maximum Q function in this particular state, and this would be your optimal action.
     - However, if you don't know you have some error in Q values, your policy would be sub-optimal.
 - Policy based:
-  - Policy based methods don't rely on thess things.
+  - Policy based methods don't rely on these things.
     - Explicitly learn policy $$\pi_\theta(s,a)$$ or $$\pi_\theta(s)) \rightarrow a$$
   - Implicitly maximize reward over policy
     - They try to explicitly learn probability or deterministic policy, and they adjust them to implicitly maximize the expected reward or some other kind of objective. 
+
+### Policy gradient formalism
+
+- Finite differences
+  - Change policy a little, evaluate
+
+$$
+\nabla J \approx \frac{J_{\theta + \epsilon} - J_{\theta}}{\epsilon}
+$$
+
+- Stochastic optimization
+  - Good old crossentropy method
+  - Maximize probability of "elite" actions
+
+### The  log-derivative trick
+
+$$
+\nabla log \pi (z) = \frac {1}{\pi(z)} \cdot \nabla \pi(z) \\
+\pi(z) \cdot \nabla log \pi (z) = \nabla \pi (z)
+$$
+
+- Use this formula for analytical inference
+- Calculation : [Log derivative trick](http://www.1-4-5.net/~dmm/ml/log_derivative_trick.pdf)
+
+$$
+J = \int_s P(s) \int_a \pi_\theta(a |s) R(s,a)\text{ }da\text{ } ds
+$$
+
+is eqal
+$$
+J = \int_s P(s) \int_a \pi_\theta (a|s) \nabla log\pi_\theta (a|s) R(s,a) da \text{ } ds
+$$
+
+## REINFORCE
+
+### Reinforcement
+
+#### Algorithm
+
+- Initialize NN weights $$\theta_o \leftarrow \text{random}$$ 
+- Loop
+  - Sample N sessions z under current $$\pi_\theta(a|s)$$
+  - Evaluate policy gradient
+  - Approximate with sampling
+
+$$
+J \approx \frac{1}{N} \sum^N_{i = 0} \sum_{s, a \in z_i} \nabla log\pi_\theta(a|s) \cdot Q(s,a) \\
+\theta_{i+1} \leftarrow \theta_i + \alpha \cdot \nabla J
+$$
+
+- Q1 : is On-policy? or Off-policy?
+  - On-policy
+- Q2 : What is better for learning?
+  - Random action in good state or great action in bad state?
+
+$$
+Q(s,a) = V(s) + A(s,a)
+$$
+
+- The idea here is that you want to reward not the Q function, as is written in this formula, but ***something called the advantage.***
+  - The advantage is, how good does your algorithm perform to what it usually does.
+- Actions influence A(s,a) only, so V(s) is irrelevant
+
+$$
+J \approx \frac{1}{N} \sum^N_{i = 0}\sum_{s, a \in z_i} \nabla log \pi_\theta(a|s) \cdot (Q(s,a) - b(s))
+$$
+
+- $$b(s)$$ : baseline
+  - Baseline is just some function which is only dependent on the state, so it does not depend on the action. 
+
