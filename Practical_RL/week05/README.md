@@ -147,3 +147,30 @@ $$
 - $$b(s)$$ : baseline
   - Baseline is just some function which is only dependent on the state, so it does not depend on the action. 
 
+## A3C
+
+- It's an actor-critic method, it has a few ramifications that ***prevented from using some of the tricks of studies so far.***
+  - For example, it's basically restricted from using the experience replay.
+    - Since actor-critic is on-policy, you have to train on the actions taken under it's current policy.
+    - You feed it actions that are sample from experience replays says, actions actually played an hour ago. 
+
+- It use many parallel sessions
+  - Synchronize them periodically to prevent the, from diverging too far
+- Asynchronous updates
+- The fact A3C is very famous for the particular condition called A3C + LSTM.  As you might have guessed from the beginner course, this basically means that the agent here uses some recurrent memory.
+- Asynchronous actor-critic has tendency to both converge faster in the initial phase and sometimes get the better final performance
+
+## Combining supervised & reinforcement learning
+
+###  Supervised pre-training
+
+- Reinforcement learning usually takes long to find optimal policy completely from scratch
+- We can use existing knowledge to help it!
+  - Human experience
+  - Known heuristic
+  - Previous system
+
+There is a huge difference between how you collect those gradients, how you obtain the, in a practical environment
+
+- Supervised learning : Allow your algorithm to sample to train on the ***reference session***
+- Policy gradient : You train it with sessions ***generated*** by human experts or whatever other source of data you are using
