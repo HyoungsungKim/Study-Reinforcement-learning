@@ -137,7 +137,7 @@ Heuristic search for RL
 
    b. Follow rollout policy until episodes terminates(Monte carlo)
 
-   - Policy used to estimate the value by Monte Carlo trajectory sampling is called rollout policy. 
+   - ***Policy used to estimate the value by Monte Carlo trajectory sampling is called rollout policy.***
 
    c. Obtain a return $$G_i$$
 
@@ -222,6 +222,100 @@ Selection -> Expansion -> Simulation -> Backup -> ...(Repeat while time remains)
 Typical Monte Carlo tree search algorithm can be divided into four main phases
 
 - Selection
+  - During the selection phase, the rollout starts from the root of the tree, that is current status, and sends down the tree selecting actions according to the tree policy. 
+  - Once such rollout enters the leaf of the tree, the expansion phase is launched. 
 - Expansion
+  - During the expansion phase, a new node or nodes which are directly adjacent to the current leaf node are added to the tree.
+  - The new state is added to the tree with all actions available in that state. 
 - Simulation
+  - This return should be propagated back to each of the state action pairs that were visited by the current rollout.
+  - This big propagation is performed by simply storing
 - Backup
+
+To produce meaningful decisions, these phases should be repeated as many times as it is possible
+
+### Tree policy: Upper Confidence Bounds for Trees
+
+Because a Monte Carlo tree search is not a single algorithm but a family of algorithms, there are plenty of different choices of the tree policy.
+
+- MCTS는 단일 알고리즘이 아니라 여러 알고리즘의 집합이기 때문에 Policy를 선택하는 여러 방법이 존재 함.
+- However, we are going to cover only one choice, mostly because it's effectiveness and popularity.
+- The Upper Confidence Bounds(확률이 높은 상한) for Trees, abbreviated as UCT.
+
+What should the tree policy do is to balance between exploitation and exploration. 
+
+- 이용-탐험 사이에서 균형을 맞추어야 함
+- Exploitation : Actions with existing good estimates
+  - 예상되는 결과가 좋은 action 선택
+- Exploration : Rarely tested actions
+  - 드물게 실행된 action 선택
+
+The effective balance between exploration and exploitation, there are a lot of approaches ***but the most simple one is to treat each action selection as an independent multi-armed bandit problem.*** This problem could be solved with many techniques.
+
+- For example, with upper confidence bound algorithm known as UCB. 
+- ***The application of the UCB algorithm as a tree policy is in fact what is called UCT***(Upper Confidence Bounds for Trees) algorithm. 
+- UCT : Treating action selection as multi-armed bandit(UCB1)
+
+$$
+\pi_{trees}(s) = argmax_a\left ( \hat{q}(s,a) + 2C\sqrt{\frac{2\ln{N(s)}}{N(s,a)}} \right )
+$$
+
+- When the action `a` is made in the state `s`, then the denominator increases, and it increases faster than the numerator because of the logarithm.
+- Argmax over all actions of the expression with two agents
+  - First agent is an approximate action-value function which is defined as an average Monte Carlo return gained by the simulation after making action `a` in state `s`
+  - This ***first term promotes exploitation*** because it favors actions which were previously shown to lead to large action value.
+- ***The second agent is the one that encourage exploration.***
+  - $$N(s)$$  is a total number of simulations
+    - state의 시뮬레이션의 총 합
+  - $$N(s,a)$$ is a total number of simulations that have made action `a` in state `s`.
+    - state에서 action이 만들어온 모든 시뮬레이션의 합
+  - ***Incrementing $$N(s,a)$$ after making action `a` in state `s` effectively increases the exploration*** values of all other actions in that state.
+    - That is so because $$N(s)$$ increases every time an agent finds itself in state `s`.
+  - But $$N(s,a)$$ increases only for the action that was committed.
+  - This exploration-exploitation balance has not only good theoretical properties, but it is also very simple to implement and has proven to be very effective in practice. 
+- Note that the constant C in front of a second term, can be used to increase or decrease the overall amount of exploration made by the tree policy. 
+- If $$N(s,a) = 0$$, then action is always selected
+  - 특정 a를 선택 했을 때 $$N(s,a)$$가 0로 가면 argmax의 괄호 안이 무한대가 되어 이 a 가 argmax가 됨. 따라서 이 a가 선택 됨
+  - 이건 즉, exploration하지 않고 exploitation 함을 의미
+  - Note that exploration term ensure that each action is chosen at least once.
+  - That is so because either $$N(s,a)$$ is zero, the second term will be infinite.
+
+### Action selection
+
+Monte Carlo tree search is how to actually select an action when planning is finished or interrupted.
+
+1. Max : most valuable root child (action with $$\hat{q}(s,a)$$)
+   - Simple and effective
+   - Despite simple and usually effective, this may not be the best strategy. One case when it fails is the case of very rare but also very large returns, outliers returns. 
+   - 매우 드물게 방문해서 값이 크게 나온경우 이 큰 값이 optimal이라는 보장이 없음
+   - 따라서 방문 횟수를 고려 할 필요가 있음
+2. Robust : Most visited root child (action with highest $$N(s,a)$$)
+   - Effective against outliers, may be suboptimal
+3. Max-robust : both highest visit count & value
+   - 방문횟수와 max값 두개를 고려 함
+   - May requires more planning time
+   - One case when it fails is the case of very rare but also very large returns, outliers returns.
+     - If such returns are possible in your environment, you may benefit more from the robust strategy of selecting the most visited action. That is, the one which has the greatest $$N(s,a)$$.
+     - You may also want to continue planning until the first two strategies will select the same action. This approach is called Max-robust strategy and was shown to be particularly effective for the game of go.
+4. Secure child : Maximizes a lower confidence bound
+   - Paranoid mode, real life applicable
+   - It is about choosing the action that maximizes the lower confidence bound.
+   - More specifically, that is, maximizes the same expression as the tree policy but changing the plus sign to the minus in front of the second agent. 
+
+### MCTS : Benefits and drawbacks
+
+#### Pros
+
+- Context independent : no hand designed heuristic
+- Asymmetric search : more promising directions first
+- Anytime : has the answer if stopped at anytime
+- Saves a lot of computation
+- Simple implementation
+- It preserves estimates
+
+#### Cons
+
+- Dependence on quality of rollout policy
+- Computationally expensive
+
+Rollout (policy): 다음 Value를 예측하는 정책
