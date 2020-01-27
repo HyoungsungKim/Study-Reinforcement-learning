@@ -1,4 +1,15 @@
-# RECAP
+# Week3
+
+## Model-based vs Model-free
+
+Model-free setting:
+
+- We don't know actual $$P(s', r |s, a)$$
+- If we know V or Q -> We have optimal policy
+- We can learn them with dynamic programming
+  - What to learn?
+  - Q(s,a)
+  - Because V(s) is useless without P(s'|s,a)
 
 ## Monte carlo method
 
@@ -61,8 +72,3 @@
 >
 > - On-policy에서는 현재 state와 action을 기반으로 update하기 때문에 이전에 방문 했던 걸 저장 해놓고 업데이트 하는 방식인 experience replay 방식을 사용 할 수 없음
 >   - 따라서 오직 Off-policy에서만 가능 함
-
-
-
-
-
