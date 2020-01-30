@@ -26,7 +26,7 @@ The problem is, in that your DQN, while trying to minimize square root error, **
 - We want the optimal policy!
 - We use cross entropy
   - It only operates in terms of $$\pi(a|s)$$
-  - $$\pi(a|s)$$ : 특정 policy에서 state가 주어졌을때 actㅑon의 확률
+  - $$\pi(a|s)$$ : 특정 policy에서 state가 주어졌을때 action의 확률
   - When state is given, probability of action under policy 
 
 ### All kinds of Policies
@@ -69,7 +69,7 @@ How did you find the probabilistic policy in case of continuous(More then 1-dime
 - Values based:
   - Learn value function $$Q_\theta(s,a)$$ or $$V_\theta(s)$$
     - The value based methods rely on, first, learning some kind of value function, V or Q or whatever. 
-  - Infer prefer $$\pi(a\s) = \#[a = \arg \max_a Q_\theta(s,a)] $$
+  - Infer prefer $$\pi(a|s) = \#[a = \arg \max_a Q_\theta(s,a)] $$
     - If you have all perfect Q values, then you can simply find the optimal ones, the maximum Q function in this particular state, and this would be your optimal action.
     - However, if you don't know you have some error in Q values, your policy would be sub-optimal.
 - Policy based:
@@ -80,6 +80,7 @@ How did you find the probabilistic policy in case of continuous(More then 1-dime
 
 ### Policy gradient formalism
 
+- $$\theta$$ is a policy
 - Finite differences
   - Change policy a little, evaluate
 
@@ -88,7 +89,7 @@ $$
 $$
 
 - Stochastic optimization
-  - Good old crossentropy method
+  - Good old cross-entropy method
   - Maximize probability of "elite" actions
 
 ### The  log-derivative trick
@@ -102,10 +103,15 @@ $$
 - Calculation : [Log derivative trick](http://www.1-4-5.net/~dmm/ml/log_derivative_trick.pdf)
 
 $$
+J = \underset{s \sim p(s) \\ a\sim \pi_\theta(a|s)}{E}[R(s,a)]
+$$
+
+
+$$
 J = \int_s P(s) \int_a \pi_\theta(a |s) R(s,a)\text{ }da\text{ } ds
 $$
 
-is eqal
+is equal
 $$
 J = \int_s P(s) \int_a \pi_\theta (a|s) \nabla log\pi_\theta (a|s) R(s,a) da \text{ } ds
 $$
@@ -149,16 +155,31 @@ $$
 
 ## A3C
 
-- It's an actor-critic method, it has a few ramifications that ***prevented from using some of the tricks of studies so far.***
+- It's an actor-critic method, it has a few ramifications(결과) that ***prevented from using some of the tricks of studies so far.***
   - For example, it's basically restricted from using the experience replay.
     - Since actor-critic is on-policy, you have to train on the actions taken under it's current policy.
     - You feed it actions that are sample from experience replays says, actions actually played an hour ago. 
-
 - It use many parallel sessions
   - Synchronize them periodically to prevent the, from diverging too far
 - Asynchronous updates
 - The fact A3C is very famous for the particular condition called A3C + LSTM.  As you might have guessed from the beginner course, this basically means that the agent here uses some recurrent memory.
 - Asynchronous actor-critic has tendency to both converge faster in the initial phase and sometimes get the better final performance
+
+### Advantage actor-critic
+
+- Idea : learn both $$\pi_\theta(a|s)$$ and $$V_\theta (s)$$
+- Use $$V_\theta (s)$$ to learn $$\pi_\theta (a|s)$$ faster
+- $$A(s,a) = Q(s,a) - V(s)$$
+- $$Q(s,a) = r + \gamma \cdot V(s')$$
+- $$A(s,a) = r + \gamma \cdot V(s') - V(s)$$
+- How do we train V then?
+
+$$
+\nabla J_{actor} \approx \frac{1}{N}\sum^N_{i = 0} \sum_{s,a \in z_i} \nabla log \pi_\theta(a|s) \cdot A(s,a) \\
+L_{critic} \approx \frac{1}{N}\sum^N_{i = 0} \sum_{s, a \in z_i}(V_\theta (s) - [r + \gamma \cdot V(s')])^2
+$$
+
+- $$A(s,a)$$ : Consider it as const
 
 ## Combining supervised & reinforcement learning
 
