@@ -4,6 +4,7 @@ DQN이나 Actor-Critic보다는 덜 유명하지만 Cross-Entropy 나름대로 �
 
 - Simplicity
 - Good convergence
+- ***Cross entropy에서는 Action의 distribution. 즉, policy를 업데이트 함***
 
 ## Taxonomy of RL methods
 
