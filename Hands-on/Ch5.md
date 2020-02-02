@@ -1,6 +1,8 @@
 # Ch5 Tabular Learning and the Bellman Equation
 
 - Q-learning : Powerful and flexibility
+- Q-optimal을 이용해서 Q-learning을 함
+- 여기서는 Q-optimal을 Q-learning처럼 설명하고 있음
 
 ## Value, state, and optimality
 
@@ -94,4 +96,75 @@ $$
 
 Limitation
 
-- Our state space should be discrets
+- Our state space should be discrete and small enough to perform multiple iterations over all states.
+- We rarely know the transition probability for the actions and rewards matrix
+
+## Q-learning for FrozenLake
+
+The most obvious change is to our value table.
+
+- In value iteration, we kept value of the state, so the key in the dictionary was just a state.
+- Now we need to store values of the Q-function, which has two parameters
+  - State
+  - Action
+
+Q-learning은 state와 action을 모두 저장하고 있음. 하지만 value iteration은 state만 저장해 놓고, action이 필요하면 계산해서 얻음
+
+- 즉 Q-optimal은 dynamic programming 같은 느낌
+- 따라서 수렴 속도는 Q-optimal이 빠르지만, 메모리 사용량이 큼
+- Value iteration에서는 다음 state로 넘어갈때 확률(Probability of state transition)을 알고 있음
+- 하지만 Q-learning에서는 확률을 모를때 사용 가능.
+  - value iteration은 model-based, Q-optimal은 model-free에 사용 됨
+  - value iteration은 주어진 확률을 기반으로 다음 value 계산 함
+    - 즉 가장 높은 확률의 action을 선택하고 그에 따른 state의 value 계산
+  - Q-optimal은 다음 state의 reward들을 보고  value 계산함. 확률은 모름
+    - 다음 state의 value가 가장 높은 걸 선택
+- [What is different between q-learning and value iteration](https://stackoverflow.com/questions/28937803/what-is-the-difference-between-q-learning-and-value-iteration)
+- 처음에 V(s), q(s,a)를 0으로 초기화 하고 시작!
+- [Sutton 2019] 책 63, 64 페이지 참고
+  - Bellman optimality equation에서 v optimal은 unique solution을 가지고 있음(어떤 a 를 선택 할지)
+
+## Recap: Bellman optimality equation
+
+### Value iteration
+
+- V(s) : value of state function of bellman optimality equation
+
+$$
+V(s) = \max_{a}[R^a_{s'} + \gamma  \sum_{s'} p(s' | s, a)V(s'))]
+$$
+
+- Value iteration이라는 느낌은 오지만 기댓값의 최댓값을 선택한다는 느낌은 잘 안드는듯...
+- $$R^a_{s'}$$ : 현재 state s에서 다음 state s'으로 action a를 했을 때 ***reward의 기댓값*** -> R(s,a,s')
+
+Other variation
+$$
+V(s) = \max_a[\sum_{s', r} p(s', r | s, a)(r + \gamma V(s'))]
+$$
+
+- Value iteration이라는 느낌은 잘 안들지만 기댓값의 최댓값을 선택한다는 느낌은 쉽게 듬
+- $$r$$ : distribution을 통해 알고 있는 reward (Random variable)
+- $$p(s', r | s, a)$$ : Probability of s' with r given s, a
+- 기댓값이 최대인걸 선택
+
+### Q-learning이라기 보다는 Q optimal인것 같은데...
+
+- Q(s,a) : Value of state-action function of bellman optimality equation
+
+Q optimal makes choosing optimal actions even easier.
+
+Define Q(s,a)
+$$
+Q(s,a) = R_{s'}^a + \gamma \cdot \sum_{s'}[p(s'|s,a)\max_aQ(s',a')]
+$$
+
+- $$R^a_{s'}$$ : 현재 state s에서 다음 state s'으로 action a를 했을 때 ***reward의 기댓값*** -> R(s,a,s')
+
+$$
+Q(s,a) = \sum_{s', r}p(s', r|s,a)(r + \gamma \max_a Q(s',a')
+$$
+
+- $$r$$ : distribution을 통해 알고 있는 reward (Random variable)
+- $$p(s', r | s, a)$$ : Probability of s' with r given s, a
+- Q(s,a)의 optimal 구하는 공식임
+- The action-value function effectively caches the results of all one-step-ahead searches.
