@@ -1,5 +1,7 @@
 # Ch6 Deep Q-Networks
 
+![Atari-pong](./img/q-learning_pong_result.gif)
+
 We'll look at the application of Q-learning to so-called ***"grid world" environments,*** which is called ***tabular Q-learning,*** and then we'll discuss Q-learning in conjunction with neural networks.
 
 ## Tabular Q-learning
