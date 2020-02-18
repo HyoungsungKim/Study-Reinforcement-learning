@@ -95,6 +95,12 @@ class Agent:
             _, act_v = torch.max(q_vals_v, dim=1)
             action = int(act_v.item())
 
+        # * There is a return for information
+        # * If put a tag in information, maybe classification is possible?
+        '''
+            Training phase : put a tag
+            Estimating phase : Do not put a tag
+        '''
         new_state, reward, is_done, _ = self.env.step(action)
         self.total_reward += reward
 
@@ -117,6 +123,7 @@ def calc_loss(batch, net, tgt_net, device='cpu'):
     state_v = torch.tensor(np.array(states, copy=False)).to(device)
     next_states_v = torch.tensor(np.array(next_states, copy=False)).to(device)
     action_v = torch.tensor(actions).to(device)
+    # * rewards_v : result reward of current state
     rewards_v = torch.tensor(rewards).to(device)
     done_mask = torch.tensor(dones, dtype=torch.bool).to(device)
 
@@ -136,11 +143,17 @@ def calc_loss(batch, net, tgt_net, device='cpu'):
     
     # * net(state_v) returns action of eacth batch -> shape is [batch, actions]
     # * net(state_v)[batch][action_index] = value
+    # * Select value using action. it does not select value using result of CNN.
     state_action_value = net(state_v).gather(1, action_v.unsqueeze(-1)).squeeze(-1)
     with torch.no_grad():
         # * Classification
         # * Select a action using max
+        # ! Here is the part that different with Supervised learning
+        # * value, indices =  torch.max(...)
         next_state_values = tgt_net(next_states_v).max(1)[0]
+        # * For example, When target state's value is 1, selected action's value is 1, then loss = 0 else loss is 1
+        # * In short, if select the highest value, then loss is small
+        # * This algorithm try to find the highest value!
         # TODO : NEED TO CHANGE `next_state_values[done_mask]` for my own experiement
         next_state_values[done_mask] = 0.0
         next_state_values = next_state_values.detach()
@@ -148,6 +161,8 @@ def calc_loss(batch, net, tgt_net, device='cpu'):
     expected_state_action_values = next_state_values * GAMMA + rewards_v
 
     # TODO : Is it going to best value?
+    # * When target net's reward incresed, test net's reward has to increase to reduce loss
+    # * Denote MSE(A - B) -> Get a assumtion that B is larger than A...?
     return nn.MSELoss()(state_action_value, expected_state_action_values)
 
 
@@ -204,9 +219,12 @@ if __name__ == "__main__":
                     print("Solved in %d frames!" % frame_idx)
                     break
 
+        # * Do not get a loss untill buffer get enough data
         if len(buffer) < REPLAY_START_SIZE:
             continue
 
+        # * Above : push to buffer, Below : Pop from buffer
+        # * 업데이트는 에피소드 종료 상관 없이 하고 있음        
         if frame_idx % SYNC_TARGET_FRAMES == 0:
             tgt_net.load_state_dict(net.state_dict())
 
