@@ -113,6 +113,38 @@ $$
 - The second change will be the loss function itself.
   - Now we not only need to incorporate weights for every sample, ***but we need to pass loss values back to the replay buffer to adjust the priorities of the sampled transitions.***
 
+## Dueling DQN
+
+The core observation of this paper is that the Q-values, $$Q(s, a)$$, that our network is trying to approximate can be divided into quantities:
+
+- The value of the state, $$V(s)$$
+  - Same with what we have known
+- The ***advantage of actions in this state,*** $$A(s, a)$$.
+  - The advantage $$A(s, a)$$ is supposed to bridge the gap from $$A(s)$$ to $$Q(s, a)$$, as, by definition, $$Q(s, a) = V(s) + A(s, a)$$.
+    - In other words, the advantage $$A(s, a)$$ is just the delta, saying ***how much extra reward some particular action from the state brings us.***
+    - The advantage could be positive or negative and, in general, can have any magnitude.
+    - For example, at some tipping point, ***the choice of one action over another can cost us a lot of the total reward.***
+- The Dueling paper's ***contribution was an explicit separation of the value and the advantage in the network's architecture, which brought better training stability, faster convergence, and better results.***
+
+### Architecture
+
+The architecture is difference from the classic DQN network.
+
+- The classic DQN network takes features from the convolution layer and, using fully connected layers, transforms them into a vector of Q-values, one for each action.
+- On the other hand, dueling DQN takes convolution features and processes them using two independent paths:
+  - One path is responsible for V(s) prediction, which is just a single number
+  - And another path predicts individual advantage values, having the same dimension as Q-values in the classic case.
+  - After that, we add V(s) to every value of A(s, a) to obtain Q(s, a), which is used and trained as normal.
+- Constraint to set: we want the mean value of the advantage of any state to be zero. (e.g. A(s) = [-2, -1, 1, 2])
+  - This constraint could be enforced in various ways.
+  - In the Dueling paper, the authors proposed a very elegant solution of ***subtracting the mean value of the advantage from the Q expression*** in the network, which effectively pulls the mean for the advantage to zero:
+
+$$
+Q(s,a) = V(s) + A(s,a) - \frac{1}{N}\sum_k A(s,k)
+$$
+
+
+
 ## On-policy vs Off-policy
 
 - Off-policy methods allow you to train on the previous large history of data or even on human demonstrations, but they usually are slower to converge.
