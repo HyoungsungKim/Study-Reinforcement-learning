@@ -15,6 +15,11 @@ DQN extensions
 - Categorical DQN
   - How to go beyond the single expected value of the action and work with full distributions
 
+## On-policy vs Off-policy
+
+- Off-policy methods allow you to train on the previous large history of data or even on human demonstrations, but they usually are slower to converge.
+- On-policy methods are typically faster, but require much more fresh data from the environment, which can be costly.
+
 ## N-step DQN
 
 (Remind)Bellman equation
@@ -143,9 +148,15 @@ $$
 Q(s,a) = V(s) + A(s,a) - \frac{1}{N}\sum_k A(s,k)
 $$
 
+## Categorical DQN
 
+In the paper, the authors questioned the fundamental piece of Q-learning—Q-values—and tried to replace them with a more generic Q-value probability distribution.
 
-## On-policy vs Off-policy
+- Why do we limit ourselves by trying to predict an average value for an action, when the underlying value may have a complicated underlying distribution? Maybe it will help us to work with distributions directly.
+- ***Overall idea is to predict the distribution of value for every action,*** similar to the distributions for our car/train example. 
+- The resulting distribution can be used to train our network to give better predictions of value distribution for every action of the given state, exactly in the same way as with Q-learning
+- The only difference will be in the loss function, which now ***has to be replaced with something suitable for distribution comparison***
 
-- Off-policy methods allow you to train on the previous large history of data or even on human demonstrations, but they usually are slower to converge.
-- On-policy methods are typically faster, but require much more fresh data from the environment, which can be costly.
+## Combining everything: Rainbow
+
+It converges faster
