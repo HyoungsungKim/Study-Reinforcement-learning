@@ -41,9 +41,24 @@ The RL case is slightly different. During the training, two things happen simult
 - Your network is trained to get better predictions on the current data
 - Your agent explores the environment
 
+RL convergence usually lies on a ***fragile balance between training and exploration.***
+
+- If we just increase a batch size without tweaking other options, we can easily overfit to the current data. (For our shooter example, your agent can start thinking that "dying young" is the only option to minimize suffering and may never discover the gun it has.)
+
 Environment수를 늘리면 리워드가 빠르게 증가함. 하지만 너무 많으면 오히려 수렴 속도가 늦어짐. env의 수는 3 언저리가 좋음.
 
 ## Play and train in separate processes
 
+At a high level, our training contains a repetition of the following steps:
 
+1. Ask the current network to choose actions and execute them in our array of environments
+2. Put observations into the replay buffer 
+3. Randomly sample the training batch from the replay buffer
+4. Train on this batch
 
+- The purpose of the first two steps is to ***populate the replay buffer with samples*** from the environment (which are observation, action, reward, and next observation).
+- The last two steps are for ***training our network.***
+
+Use multi core programming
+
+- Separate replay part and training part
