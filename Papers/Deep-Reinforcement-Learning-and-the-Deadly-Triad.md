@@ -31,7 +31,7 @@ When combining TD learning with function approximation, ***updating the value at
   - Neural network
   - Experience buffer
   - One-step Q-learning as its learning algorithm, it relies on bootstrapping.
-  - Despite combining all these components of the deadly triad, DQN successfully learnt to play many Atari 2600 games.
+  - Despite combining all these components of the deadly triad, DQN successfully learns to play many Atari 2600 games.
 
 In this paper, we conduct an empirical examination into when the triad becomes deadly. 
 
@@ -103,7 +103,7 @@ $$
 
 The lack of unbounded divergence in any of the runs suggests that ***although the deadly triad can cause unbounded divergence in deep RL, it is not common when applying deep Q-learning and its variants to current deep function approximators***.
 
-### Examining the bootstap targets (Hypothesis 2, 3)
+### Examining the bootstrap targets (Hypothesis 2, 3)
 
 Q-learning exhibits by far the largest fraction of instabilities (61%);
 
