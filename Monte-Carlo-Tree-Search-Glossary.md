@@ -18,7 +18,7 @@ $$
 - $\bar{X}_j$ : Average reward from arm j
   - It encourages the exploitation
 - $n_j$ : The number of times arm j was played
-- $n$ : The overall number of plays so far.
+- $n$ : The overall number of plays so far.(The number of times the current parent node has been visited)
   - $\sqrt{{2\ln{n}}/{n_j}}$ : It encourages the exploration
   - To maximize this fraction number, denominator has to be 0
   - It means agents have to minimize the number of try
@@ -48,3 +48,6 @@ $$
 2. robust child: select the most visited root child;
 3. ***max-robust child***: select the root child with both the highest visit count and the highest reward;if none exists, then continue searching until an acceptable visit count is achieved;
 4. secure child: select the child which maximizes a lower confidence bound
+
+## Upper Confidence Bounds for Trees(UCT)
+
