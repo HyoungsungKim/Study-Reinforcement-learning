@@ -1,6 +1,28 @@
-# Monte Carlo Tree Search Glossary
+# A Survey of Monte Carlo Tree Search Methods
 
 Based on http://ccg.doc.gold.ac.uk/ccg_old/papers/browne_tciaig12_1.pdf
+
+## Overview
+
+A great benefit of MCTS is that the values of intermediate states do not have to be evaluated, as for depth-limited minimax search, which greatly reduces the amount of domain knowledge required. ***Only the value of the terminal state at the end of each simulation is required***.
+
+## Bandit-based methods
+
+### Regret
+
+The policy should aim to minimize the player’s regret, which is defined after `n` plays as:
+$$
+R_N = \mu^*n - \mu_j \sum^K_{j=1}\mathbb{E}[T_j(n)]
+$$
+
+- $\mu^*$ : The best possible expected reward
+- $E[T_j(n)]$ : The expected number of plays for arm `j` in the first n trials.
+
+In other words, ***the regret is the expected loss due to not playing the best bandit***. It is important to highlight the necessity of attaching non-zero probabilities to all arms at all times, in order to ensure that the optimal arm is not missed due to temporarily promising rewards from a sub-optimal arm.
+
+### Upper Confidence Bounds(UCBs)
+
+For bandit problems, it is useful to know the upper confidence bound (UCB) that any given arm will be optimal. ***The simplest UCB policy proposed by Auer et al. [13] is called UCB1***, which has an expected logarithmic growth of regret uniformly over `n` (not just asymptotically) without any prior knowledge regarding the reward distributions (which have to have their support in[0,1]). The policy dictates to play arm `j` that maximizes
 
 Upper confidence indices : Allow the policy to estimate the expected reward of a specific bandit once its index is computed.
 
@@ -18,8 +40,8 @@ $$
 - $\bar{X}_j$ : Average reward from arm j
   - It encourages the exploitation
 - $n_j$ : The number of times arm j was played
-- $n$ : The overall number of plays so far.(The number of times the current parent node has been visited)
-  - $\sqrt{{2\ln{n}}/{n_j}}$ : It encourages the exploration
+- $n$ : The overall number of plays so far. (The number of times the current parent node has been visited)
+  - $\sqrt{\frac{2\ln{n}}{n_j}}$ : It encourages the exploration
   - To maximize this fraction number, denominator has to be 0
   - It means agents have to minimize the number of try
 
